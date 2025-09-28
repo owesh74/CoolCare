@@ -10,7 +10,8 @@ const Auth = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     
-    const API_URL = "http://localhost:5000/auth";
+    // Define API_URL here
+    const API_URL = process.env.REACT_APP_API_URL + "/auth";
 
     const handleFormChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,11 +22,11 @@ const Auth = () => {
         setMessage('');
         try {
             if (isLogin) {
-                // Use the login function from AuthContext
+                // Login uses the context, which is already updated
                 await login(formData.email, formData.password);
                 setMessage('Login successful!');
             } else {
-                // Handle signup separately, then navigate to OTP
+                // Updated API call for signup
                 const response = await axios.post(`${API_URL}/signup`, formData);
                 setMessage(response.data.msg || response.data.message);
                 navigate('/verify-otp', { state: { email: formData.email } });

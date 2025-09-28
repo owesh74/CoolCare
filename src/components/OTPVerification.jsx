@@ -9,12 +9,14 @@ const OTPVerification = () => {
     const navigate = useNavigate();
     const email = location.state?.email;
 
-    const API_URL = "http://localhost:5000/auth";
+    // Define API_URL here
+    const API_URL = process.env.REACT_APP_API_URL + "/auth";
 
     const handleVerification = async (e) => {
         e.preventDefault();
         setMessage('');
         try {
+            // Updated API call
             const res = await axios.post(`${API_URL}/verify-otp`, { email, otp });
             setMessage(res.data.msg);
             setTimeout(() => navigate('/auth'), 2000);

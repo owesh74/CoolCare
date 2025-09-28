@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
+// Define API_URL once here
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -10,7 +12,6 @@ export const AuthProvider = ({ children }) => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
-    const API_URL = "http://localhost:5000";
 
     const checkAuthStatus = async (token) => {
         if (!token) {
@@ -19,6 +20,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
+            // Updated API call
             const response = await axios.get(`${API_URL}/auth/me`, {
                 headers: { 'x-auth-token': token }
             });
@@ -41,6 +43,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (email, password) => {
+        // Updated API call
         const res = await axios.post(`${API_URL}/auth/login`, { email, password });
         localStorage.setItem('token', res.data.token);
         setUser(res.data.user);
