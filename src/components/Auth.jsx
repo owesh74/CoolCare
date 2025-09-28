@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import axios from 'axios';
 import { useAuth } from '../AuthContext';
 
@@ -10,7 +10,6 @@ const Auth = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     
-    // Define API_URL here
     const API_URL = process.env.REACT_APP_API_URL + "/auth";
 
     const handleFormChange = (e) => {
@@ -22,11 +21,9 @@ const Auth = () => {
         setMessage('');
         try {
             if (isLogin) {
-                // Login uses the context, which is already updated
                 await login(formData.email, formData.password);
                 setMessage('Login successful!');
             } else {
-                // Updated API call for signup
                 const response = await axios.post(`${API_URL}/signup`, formData);
                 setMessage(response.data.msg || response.data.message);
                 navigate('/verify-otp', { state: { email: formData.email } });
@@ -58,6 +55,13 @@ const Auth = () => {
                         <label className="block text-gray-700">Password</label>
                         <input type="password" name="password" value={formData.password} onChange={handleFormChange} className="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required />
                     </div>
+                    {isLogin && (
+                        <div className="text-right">
+                            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                                Forgot Password?
+                            </Link>
+                        </div>
+                    )}
                     <button type="submit" className="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
                         {isLogin ? 'Login' : 'Signup'}
                     </button>
