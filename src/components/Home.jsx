@@ -1,29 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
-    // State for the one-time initial pop-up (appears on load)
-    const [showToaster, setShowToaster] = useState(false);
     // State for the persistent pop-up when clicking the fixed button
     const [showFixedToaster, setShowFixedToaster] = useState(false);
     
-    const CONTACT_NUMBER = "9999999999"; // <-- Set your official contact number here
-
-    useEffect(() => {
-        // --- Logic for one-time initial pop-up ---
-        const hasShown = localStorage.getItem('hasShownContactPopUp');
-        
-        if (!hasShown) {
-            setShowToaster(true);
-            localStorage.setItem('hasShownContactPopUp', 'true');
-        }
-        
-        const timer = setTimeout(() => {
-            setShowToaster(false);
-        }, 5000); // Pop-up stays visible for 5 seconds
-
-        return () => clearTimeout(timer);
-    }, []);
+    // NOTE: Replace this with your actual phone number
+    const CONTACT_NUMBER = "7620437704"; 
 
     const handleCall = () => {
         // Redirects to the phone dialer application
@@ -42,10 +25,10 @@ const Home = () => {
                         Experience seamless AC service booking, from installation to repair, with our reliable and efficient platform.
                     </p>
                     <div className="mt-10 flex flex-wrap justify-center gap-4">
-                        <Link to="/auth" className="px-8 py-4 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+                        <Link to="/services" className="px-8 py-4 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-colors">
                             Book Online
                         </Link>
-                        {/* Static Call CTA (Main Hero Button) */}
+                        {/* Main Hero Button - Styled to look like the image */}
                         <button
                             onClick={handleCall}
                             className="px-8 py-4 text-lg font-semibold text-green-600 bg-white border border-green-600 rounded-lg shadow-md hover:bg-gray-50 transition-colors"
@@ -73,51 +56,51 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Fixed Call Button (Clickable, not a direct link) */}
+            {/* Fixed Call Button (FAB) */}
             <button
                 onClick={() => setShowFixedToaster(true)}
                 className="fixed bottom-6 right-6 p-4 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-transform transform hover:scale-110 z-40"
             >
+                {/* Phone Icon */}
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.137a11.042 11.042 0 005.516 5.516l1.137-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
             </button>
 
-            {/* Fixed Toaster Pop-up (Appears on clicking the fixed button) */}
+            {/* Styled Toaster Pop-up (Matches Image) */}
             {showFixedToaster && (
-                <div className="fixed bottom-20 right-6 p-4 bg-white rounded-lg shadow-2xl w-80 z-50 transform transition-transform duration-300 animate-slide-in">
-                    <p className="text-gray-800 font-semibold mb-3">
-                        Book directly by calling our service line!
-                    </p>
-                    <div className="flex justify-between items-center">
-                        <span className="text-lg text-blue-600 font-bold">{CONTACT_NUMBER}</span>
+                <div className="fixed bottom-20 right-6 bg-white rounded-xl shadow-2xl w-72 z-50 transform transition-transform duration-300">
+                    {/* Header/Title Area */}
+                    <div className="flex justify-between items-center p-4 border-b border-gray-100">
+                        <div className="flex items-center text-pink-600 font-semibold"> 
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                {/* CORRECTED PATH TAGS HERE */}
+                                <path fillRule="evenodd" d="M14.414 7l-5.586-5.586A2 2 0 007.586 1H5a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V9.586A2 2 0 0014.414 7zM10 18a1 1 0 100-2 1 1 0 000 2zM10 5a1 1 0 011 1v4a1 1 0 11-2 0V6a1 1 0 011-1z" clipRule="evenodd" />
+                            </svg>
+                            <span>Quick Service Call</span>
+                        </div>
                         <button
-                            onClick={handleCall}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            onClick={() => setShowFixedToaster(false)}
+                            className="text-gray-400 hover:text-gray-600"
                         >
-                            Call Now
+                            &times;
                         </button>
                     </div>
-                    <button
-                        onClick={() => setShowFixedToaster(false)}
-                        className="absolute top-1 right-1 text-gray-400 hover:text-gray-600"
-                    >
-                        &times;
-                    </button>
-                </div>
-            )}
-            
-            {/* One-Time Initial Pop-up (Shows only on initial load) */}
-            {showToaster && (
-                <div className="fixed top-20 left-1/2 transform -translate-x-1/2 p-4 bg-yellow-400 text-gray-800 rounded-lg shadow-2xl w-full max-w-sm z-50 animate-bounce-fade">
-                    <div className="flex justify-between items-center">
-                        <p className="font-bold">✨ Quick Service! Call Now! ✨</p>
-                        <a
-                            href={`tel:${CONTACT_NUMBER}`}
-                            className="px-3 py-1 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition-colors"
-                        >
-                            {CONTACT_NUMBER}
-                        </a>
+
+                    {/* Content Area */}
+                    <div className="p-4">
+                        <p className="text-gray-700 text-sm mb-3">
+                            Book directly by calling our service line!
+                        </p>
+                        <div className="flex justify-between items-center mt-2">
+                            <span className="text-lg text-blue-600 font-bold">{CONTACT_NUMBER}</span>
+                            <button
+                                onClick={handleCall}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                            >
+                                Call Now
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

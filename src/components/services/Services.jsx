@@ -8,7 +8,8 @@ const Services = () => {
     const navigate = useNavigate();
     const [services, setServices] = useState([]);
     const [message, setMessage] = useState('');
-    const [bookingData, setBookingData] = useState({ date: '', time: '', address: '', contactNumber: '' });
+    // ADDED name to bookingData state
+    const [bookingData, setBookingData] = useState({ name: '', date: '', time: '', address: '', contactNumber: '' });
     const [selectedService, setSelectedService] = useState(null);
     const [availableSlots, setAvailableSlots] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -57,61 +58,62 @@ const Services = () => {
         e.preventDefault();
         setMessage('');
 
-        if (!isLoggedIn) {
-            setMessage('Please log in to book a service.');
-            setIsSuccess(false); // Correctly set to false for an error
-            setShowModal(true);
-            return navigate('/auth');
-        }
-
+        // 2. Check if a service is selected
         if (!selectedService) {
             setMessage('Please select a service.');
-            setIsSuccess(false); // Correctly set to false for an error
             setShowModal(true);
+            setIsSuccess(false);
             return;
         }
 
+        // 3. Validate booking data on the frontend
         const currentDate = new Date();
         const selectedDate = new Date(bookingData.date);
         const contactNumber = bookingData.contactNumber;
 
         if (selectedDate < currentDate.setHours(0, 0, 0, 0)) {
             setMessage('You cannot book a service for a past date.');
-            setIsSuccess(false); // Correctly set to false for an error
+            setIsSuccess(false);
             setShowModal(true);
             return;
         }
 
         if (!/^\d{10}$/.test(contactNumber)) {
             setMessage('Please enter a valid 10-digit contact number.');
-            setIsSuccess(false); // Correctly set to false for an error
+            setIsSuccess(false);
             setShowModal(true);
             return;
         }
 
         if (bookingData.time === '') {
             setMessage('Please select a time slot.');
-            setIsSuccess(false); // Correctly set to false for an error
+            setIsSuccess(false);
             setShowModal(true);
             return;
         }
         
         try {
-            const token = localStorage.getItem('token');
             const payload = {
                 ...bookingData,
                 serviceId: selectedService._id,
             };
-            const response = await axios.post('http://localhost:5000/bookings', payload, {
-                headers: { 'x-auth-token': token }
-            });
-            setMessage(response.data.message || 'Service booked successfully!');
+            
+            await axios.post('http://localhost:5000/bookings', payload);
+
+            // UPDATED SUCCESS MESSAGE
+            setMessage('Booking confirmed! You will get a call from our technician soon to confirm service details.');
             setIsSuccess(true);
             setShowModal(true);
+            
+            setTimeout(() => {
+                setShowModal(false);
+                navigate('/');
+            }, 3000); // Increased timeout for reading message
+
             setSelectedService(null);
-            setBookingData({ date: '', time: '', address: '', contactNumber: '' });
+            setBookingData({ name: '', date: '', time: '', address: '', contactNumber: '' });
         } catch (error) {
-            setMessage(error.response?.data?.message || 'Failed to book service.');
+            setMessage(error.response?.data?.message || 'Failed to book service. Please try again.');
             setIsSuccess(false);
             setShowModal(true);
         }
@@ -174,6 +176,13 @@ const Services = () => {
                 <div className="mt-12 p-8 bg-white rounded-lg shadow-lg">
                     <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Book {selectedService.name}</h2>
                     <form onSubmit={handleBookService} className="space-y-6">
+                        {/* NEW NAME FIELD */}
+                        <div>
+                            <label className="block text-gray-700">Full Name</label>
+                            <input type="text" name="name" value={bookingData.name} onChange={handleBookingChange} className="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required />
+                        </div>
+                        {/* END NEW NAME FIELD */}
+                        
                         <div>
                             <label className="block text-gray-700">Date</label>
                             <input type="date" name="date" value={bookingData.date} onChange={handleBookingChange} className="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required />

@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
-// Define API_URL once here
 const API_URL = process.env.REACT_APP_API_URL;
 
 export const AuthProvider = ({ children }) => {
@@ -13,28 +12,23 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
-    const checkAuthStatus = async (token) => {
+    const checkAuthStatus = (token) => {
+        const userEmail = localStorage.getItem('userEmail'); // Get the stored email
+        
         if (!token) {
             setIsLoading(false);
             return;
         }
 
-        try {
-            // Updated API call
-            const response = await axios.get(`${API_URL}/auth/me`, {
-                headers: { 'x-auth-token': token }
-            });
-            setUser(response.data.user);
+        // Since the only logged-in user is the Admin, we set the state based on the presence of the token and email.
+        if (token && userEmail) {
+            // We set the user object with the known admin role for ProtectedRoutes
+            setUser({ email: userEmail, role: 'admin' }); 
             setIsLoggedIn(true);
-            if (response.data.user.role === 'admin') {
-                setIsAdmin(true);
-            }
-        } catch (error) {
-            console.error('User token invalid:', error);
-            localStorage.removeItem('token');
-        } finally {
-            setIsLoading(false);
+            setIsAdmin(true);
         }
+
+        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -42,30 +36,18 @@ export const AuthProvider = ({ children }) => {
         checkAuthStatus(token);
     }, []);
 
-    const login = async (email, password) => {
-        // Updated API call
-        const res = await axios.post(`${API_URL}/auth/login`, { email, password });
-        localStorage.setItem('token', res.data.token);
-        setUser(res.data.user);
-        setIsLoggedIn(true);
-        if (res.data.user.role === 'admin') {
-            setIsAdmin(true);
-            navigate('/admin');
-        } else {
-            setIsAdmin(false);
-            navigate('/dashboard');
-        }
-    };
+    // NOTE: login function is kept as a placeholder but is not used by AdminLogin.jsx anymore.
 
     const logout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('userEmail'); // Clear the stored email
         setUser(null);
         setIsLoggedIn(false);
         setIsAdmin(false);
         navigate('/');
     };
 
-    const value = { user, isLoggedIn, isAdmin, isLoading, login, logout };
+    const value = { user, isLoggedIn, isAdmin, isLoading, logout };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

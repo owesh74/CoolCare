@@ -4,11 +4,12 @@ import { useAuth } from '../AuthContext';
 
 const Admin = () => {
     const { isAdmin, isLoggedIn, isLoading } = useAuth();
-    const [bookings, setBookings] = useState([]);
+    const [allBookings, setAllBookings] = useState([]); // Stores all fetched bookings
     const [services, setServices] = useState([]);
     const [activeTab, setActiveTab] = useState('bookings');
     const [newService, setNewService] = useState({ name: '', description: '', price: '', duration: '' });
     const [message, setMessage] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All'); // NEW: State for filtering
 
     useEffect(() => {
         if (!isLoading && isAdmin) {
@@ -23,7 +24,7 @@ const Admin = () => {
             const response = await axios.get('http://localhost:5000/admin/bookings', {
                 headers: { 'x-auth-token': token }
             });
-            setBookings(response.data);
+            setAllBookings(response.data); // Store all bookings
         } catch (error) {
             setMessage(error.response?.data?.message || 'Failed to fetch bookings.');
         }
@@ -83,7 +84,7 @@ const Admin = () => {
                 headers: { 'x-auth-token': token }
             });
             setMessage('Booking status updated successfully!');
-            fetchBookings();
+            fetchBookings(); // Re-fetch to update the list
         } catch (error) {
             setMessage(error.response?.data?.message || 'Failed to update booking status.');
         }
@@ -100,11 +101,16 @@ const Admin = () => {
                 headers: { 'x-auth-token': token }
             });
             setMessage('Booking deleted successfully!');
-            fetchBookings();
+            fetchBookings(); // Re-fetch to update the list
         } catch (error) {
             setMessage(error.response?.data?.message || 'Failed to delete booking.');
         }
     };
+    
+    // NEW: Filtered bookings list derived from allBookings
+    const filteredBookings = allBookings.filter(booking => 
+        statusFilter === 'All' || booking.status === statusFilter
+    );
 
 
     if (isLoading) return <div className="text-center text-xl text-gray-600">Loading...</div>;
@@ -135,18 +141,38 @@ const Admin = () => {
             {activeTab === 'bookings' && (
                 <div>
                     <h2 className="text-2xl font-semibold text-gray-700 mb-4">All Bookings</h2>
-                    {bookings.length === 0 ? (
-                        <p className="text-gray-500">No bookings found.</p>
+                    
+                    {/* NEW: Status Filter Dropdown */}
+                    <div className="mb-6 flex items-center space-x-3">
+                        <label className="font-medium text-gray-700">Filter by Status:</label>
+                        <select
+                            className="border border-gray-300 rounded-lg p-2"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="All">All</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Assigned">Assigned</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    {/* END NEW FILTER */}
+
+                    {filteredBookings.length === 0 ? (
+                        <p className="text-gray-500">No {statusFilter !== 'All' && statusFilter} bookings found.</p>
                     ) : (
                         <div className="space-y-4">
-                            {bookings.map((booking) => (
+                            {filteredBookings.map((booking) => (
                                 <div key={booking._id} className="bg-white p-6 rounded-lg shadow-md">
                                     <h3 className="text-xl font-bold text-gray-800">Service: {booking.serviceId?.name || 'N/A'}</h3>
-                                    <p className="text-gray-600">User: {booking.userId?.name || 'N/A'}</p>
-                                    <p className="text-gray-600">Email: {booking.userId?.email || 'N/A'}</p>
+                                    
+                                    {/* FIX: Show Customer Name and remove redundant email/user fields */}
+                                    <p className="text-gray-600">Customer Name: <span className="font-semibold">{booking.customerName || 'N/A'}</span></p> 
                                     <p className="text-gray-600">Contact Number: {booking.contactNumber}</p>
+                                    
                                     <p className="text-gray-600">Date: {new Date(booking.date).toLocaleDateString()}</p>
                                     <p className="text-gray-600">Address: {booking.address}</p>
+                                    
                                     <div className="mt-4 flex items-center justify-between">
                                         <div className="flex items-center space-x-2">
                                             <label className="text-gray-700 font-semibold">Status:</label>
